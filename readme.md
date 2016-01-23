@@ -38,7 +38,7 @@ $config = array(
     'host' => '127.0.0.1',
     'port' => '20102' );
 
-// create client conncetion
+// create client connection
 $verge = new verge( $config );
 
 // create a new address
@@ -48,7 +48,7 @@ print( $address );
 // check balance 
 print( "vergeDEV: " . $verge->get_balance( 'vergeDEV' ) );
 
-// send money externally (withdrawl?)
+// send money externally (withdraw?)
 $verge->send( 'vergeDEV', 'DPNC2H2pYUCSebQ992GyeRTRuWw3hCTBwD', 10000 );
 
 ```
