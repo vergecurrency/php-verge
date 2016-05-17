@@ -12,7 +12,7 @@
 
 require_once dirname(  __FILE__ ) . '/jsonRPCClient.php';
 
-class Doged  {
+class Verge  {
 
     private $client;
 
