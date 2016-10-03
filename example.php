@@ -25,11 +25,11 @@ print_r( $verge->list_accounts() );
 print( "mkaz: " . $verge->get_balance( 'vergeDEV' ) );
 
 // move money from accounts in wallet
-// moves from 'dogecoindark' to account 'vergeDEV'
+// moves from 'account a' to account 'account b'
 $verge->move( 'from name', 'to name', 10000 );
 
 // send money externally (withdrawl?)
-// send from account to external address
+// send 10 coins from account (name) to external address
 $verge->send( 'name', 'DMheu3hJtEx84DBTKjedKmSwekYvWgsEM3', 10 );
 
 
