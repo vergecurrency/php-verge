@@ -1,5 +1,7 @@
 <?php
 
+namespace Verge;
+
 /**
  * Project : php-verge library
  * Summary : A basic php library to talk with VERGEd 
@@ -8,11 +10,9 @@
  *
  * Author  : VERGE
  * License : GPL vv
- */ 
+ */
 
-require_once dirname(  __FILE__ ) . '/jsonRPCClient.php';
-
-class Verge  {
+class Client  {
 
     private $client;
 
@@ -30,7 +30,7 @@ class Verge  {
             $config['port'] );
 
         // internal client to use for connection
-        $this->client = new jsonRPCClient( $connect_string );
+        $this->client = new \JSONRPCClient( $connect_string );
     }
 
 

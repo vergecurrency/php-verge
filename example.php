@@ -2,7 +2,7 @@
 
 ## Simple command-line script to show examples
 
-require "./verge.php";
+require __DIR__ . '/vendor/autoload.php';
 
 $config = array(
     'user' => 'vergerpcuser',
@@ -11,7 +11,7 @@ $config = array(
     'port' => '20102' );
 
 // create client conncetion
-$verge = new verge( $config );
+$verge = new Verge\Client( $config );
 
 
 // create a new address

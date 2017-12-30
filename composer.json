@@ -1,0 +1,19 @@
+{
+    "name": "miguelsolano/php-verge",
+    "description": "A PHP client for VERGE",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Miguel Solano",
+            "email": "miguel.solano@classyllama.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {},
+    "autoload": {
+        "psr-4" : {
+            "Verge\\": "Verge/"
+        },
+        "files": ["./utils/jsonRPCClient.php"]
+    }
+}

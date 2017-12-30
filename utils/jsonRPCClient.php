@@ -1,4 +1,4 @@
-<?php 
+<?php
 /*
                     COPYRIGHT
 
@@ -27,7 +27,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
  * @author sergio <jsonrpcphp@inservibile.org>
  */
-class jsonRPCClient {
+class JSONRPCClient {
 
     /**
      * Debug state
