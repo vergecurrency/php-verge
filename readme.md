@@ -2,7 +2,7 @@
 ____   _________________________   ________ ___________
 \   \ /   /\_   _____/\______   \ /  _____/ \_   _____/
  \   Y   /  |    __)_  |       _//   \  ___  |    __)_ 
-  \     /   |        \ |    |   \\    \_\  \ |        \ 2016 VERGE
+  \     /   |        \ |    |   \\    \_\  \ |        \ 2018 VERGE
    \___/   /_______  / |____|_  / \______  //_______  /
                    \/         \/         \/         \/ 
 ```
@@ -30,26 +30,31 @@ make -f makefile.unix
 Example use, see examples.php for more
 
 ```
-require "./verge.php";
+require_once 'jsonRPCClient.php';
+require_once 'verge.php';
 
+// Demo RPC configuration
 $config = array(
     'user' => 'vergerpcuser',
     'pass' => 'rpcpassword',
     'host' => '127.0.0.1',
     'port' => '20102' );
 
-// create client connection
-$verge = new verge( $config );
+// Initiate connection
+$rpc_connection = new jsonRPCClient($config);
+
+// Send RPC handle to verge
+$verge = new verge($rpc_connection);
 
 // create a new address
-$address = $verge->get_address( 'vergeDEV' );
-print( $address );
+$address = $verge->get_address('vergeDEV');
+print($address);
 
 // check balance 
-print( "vergeDEV: " . $verge->get_balance( 'vergeDEV' ) );
+print("vergeDEV: " . $verge->get_balance('vergeDEV'));
 
 // send money externally (withdraw?)
-$verge->send( 'vergeDEV', 'DPNC2H2pYUCSebQ992GyeRTRuWw3hCTBwD', 10000 );
+$verge->send('vergeDEV', 'DPNC2H2pYUCSebQ992GyeRTRuWw3hCTBwD', 10000);
 
 ```
 
@@ -57,5 +62,3 @@ $verge->send( 'vergeDEV', 'DPNC2H2pYUCSebQ992GyeRTRuWw3hCTBwD', 10000 );
 
 
 Forked from library created by Marcus Kazmierczak, http://mkaz.com/
-
-
