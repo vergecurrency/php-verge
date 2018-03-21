@@ -10,9 +10,7 @@
  * License : GPL vv
  */ 
 
-require_once dirname(  __FILE__ ) . '/jsonRPCClient.php';
-
-class Verge  {
+class Verge {
 
     private $client;
 
@@ -21,16 +19,9 @@ class Verge  {
      * @param $config array of parameters $host, $port, $user, $pass
      */
 
-    function __construct( $config ) {
-        
-        $connect_string = sprintf( 'http://%s:%s@%s:%s/', 
-            $config['user'],
-            $config['pass'],
-            $config['host'],
-            $config['port'] );
-
-        // internal client to use for connection
-        $this->client = new jsonRPCClient( $connect_string );
+    public function __construct($rpc_connection)
+    {
+        $this->client = $rpc_connection;
     }
 
 
@@ -42,8 +33,9 @@ class Verge  {
      * @param string $account some string used as key to account
      * @return string VERGE address 
      */
-    function get_address( $account ) {
-        return $this->client->getaccountaddress( $account );
+    public function get_address($account)
+    {
+        return $this->client->getaccountaddress($account);
     }
 
 
@@ -53,8 +45,8 @@ class Verge  {
      * @param string $address VERGE addresss
      * @return string account name key
      */
-    function get_account( $address ) {
-        return $this->client->getaccount( $address );
+    public function get_account($address) {
+        return $this->client->getaccount($address);
     }
 
 
@@ -65,8 +57,8 @@ class Verge  {
      * @param string $account account name
      * @return string verge address
      */
-    function get_new_address( $account='' ) {
-        return $this->client->getnewaddress( $account );
+    function get_new_address($account='') {
+        return $this->client->getnewaddress($account);
     }
 
 
@@ -85,7 +77,7 @@ class Verge  {
      * @param string $txid transaction id
      * @return array describing the transaction
      */
-    function get_transaction( $txid ) {
+    function get_transaction($txid) {
         return $this->client->gettransaction( $txid );
     }
 
@@ -95,7 +87,7 @@ class Verge  {
      * @param string $address verge address
      * @param string $account account string
      */
-    function set_account( $address, $account ) {
+    function set_account($address, $account) {
         return $this->client->setaccount($address, $account);
     }
 
@@ -106,8 +98,9 @@ class Verge  {
      * @param string $account account name
      * @return float account balance
      */
-    function get_balance( $account, $minconf=1 ) {
-        return $this->client->getbalance( $account, $minconf );
+    function get_balance($account, $minimum_confirmations=1)
+    {
+        return $this->client->getbalance($account, $minimum_confirmations);
     }
 
 
@@ -120,8 +113,9 @@ class Verge  {
      * @param float $amount amount of coins to move
      * @return
      */
-    function move( $account_from, $account_to, $amount ) {
-        return $this->client->move( $account_from, $account_to, $amount );
+    function move($account_from, $account_to, $amount)
+    {
+        return $this->client->move($account_from, $account_to, $amount);
     }
 
 
@@ -133,18 +127,19 @@ class Verge  {
      * @param float $amount amount of coins to send
      * @return string txid
      */
-    function send( $account, $to_address, $amount ) {
-        $txid = $this->client->sendfrom( $account, $to_address, $amount );  
+    function send($account, $to_address, $amount)
+    {
+        $txid = $this->client->sendfrom( $account, $to_address, $amount);  
         return $txid;
     }
 
-	/**
-	 * Validate a given VERGE Address
-	 * @param string $address to validate
-	 * @return array with the properties of the address
-	 */
-	function validate_address( $address ) {
-		return $this->client->validateaddress($address);
-	}
+    /**
+     * Validate a given VERGE Address
+     * @param string $address to validate
+     * @return array with the properties of the address
+     */
+    function validate_address($address)
+    {
+        return $this->client->validateaddress($address);
+    }
 }
-
