@@ -10,10 +10,12 @@ $config = array(
     'user' => 'vergerpcuser',
     'pass' => 'rpcpassword',
     'host' => '127.0.0.1',
-    'port' => '20102' );
+    'port' => '21102' );
+
+$connect_string = sprintf('http://%s:%s@%s:%s/', $config['user'], $config['pass'], $config['host'], $config['port']);
 
 // Initiate connection
-$rpc_connection = new jsonRPCClient($config);
+$rpc_connection = new jsonRPCClient($connect_string);
 
 // Send RPC handle to verge
 $verge = new verge($rpc_connection);
