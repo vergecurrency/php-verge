@@ -10,7 +10,7 @@ $config = array(
     'user' => 'vergerpcuser',
     'pass' => 'rpcpassword',
     'host' => '127.0.0.1',
-    'port' => '21102' );
+    'port' => '20102' );
 
 $connect_string = sprintf('http://%s:%s@%s:%s/', $config['user'], $config['pass'], $config['host'], $config['port']);
 
