@@ -1,9 +1,13 @@
 <?php
 
-// Simple command-line script to show examples
+/**
+ * Example usage of an RPC with Verge.
+ * PSR #0-4 Compliant.
+ * @author Positivism
+ */
 
-require_once 'jsonRPCClient.php';
-require_once 'verge.php';
+// Composer Autoloader ( PSR-4 )
+require_once 'vendor/autoload.php';
 
 // Demo RPC configuration
 $config = array(
@@ -12,28 +16,31 @@ $config = array(
     'host' => '127.0.0.1',
     'port' => '20102' );
 
-$connect_string = sprintf('http://%s:%s@%s:%s/', $config['user'], $config['pass'], $config['host'], $config['port']);
-
 // Initiate connection
-$rpc_connection = new jsonRPCClient($connect_string);
+$verge = new Verge\RPC(
+    sprintf('http://%s:%s@%s:%s/',
+        $config['user'],
+        $config['pass'],
+        $config['host'],
+        $config['port']
+    )
+);
 
-// Send RPC handle to verge
-$verge = new verge($rpc_connection);
+// Set name of the account.
+$account['name'] = 'Positivism';
 
-// create a new address
-$address = $verge->get_address('vergeDEV');
-print("Address: $address \n");
+// Generate a new verge address.
+$verge->getnewaddress($account['name']);
 
-// list accounts in wallet
-print_r($verge->list_accounts());
+// Get account addresses
+$account['addresses'] = $verge->getaddressesbyaccount($account['name']);
 
-// get balance in wallet
-print("mkaz: " . $verge->get_balance('vergeDEV'));
+// Get account balance.
+$account['balance'] = $verge->getbalance($account['name']);
 
-// move money from accounts in wallet
-// moves from 'account a' to account 'account b'
-$verge->move('from name', 'to name', 10000);
-
-// send money externally (withdrawl?)
-// send 10 coins from account (name) to external address
-$verge->send('name', 'DMheu3hJtEx84DBTKjedKmSwekYvWgsEM3', 10);
+echo 'Verge Account Name: '.$account['name'].'<br />';
+echo 'Verge Account Balance: '.$account['balance'].'<br />';
+echo 'Verge Account Addresses: <br /><br />';
+foreach ($account['addresses'] as $key => $address) {
+    echo 'Address #'.$key.': '.$address.'<br />';
+}
