@@ -6,17 +6,14 @@ ____   _________________________   ________ ___________
    \___/   /_______  / |____|_  / \______  //_______  /
                    \/         \/         \/         \/ 
 ```
-# PHP-Verge
+# php-verge
 
 A basic PHP library to talk to a VERGEd daemon to get you started in your VERGE project!
-Proper rpc usage with basic examples given to assist you in your development.
-For a full list of available rpc commands issue the _help_ command in your VERGEd.
 
-**Proud to be completely PSR compliant!**
+All of the end points of the API are not implemented, it is currently focused on account and moving of coins. I'm trying to make sure the library is documented and includes examples so its easy to use before being complete.  Patches are welcome.
+
 
 ## Requirements
-
-Requires **Composer** [https://getcomposer.org/](https://getcomposer.org/)
 
 Requires **VERGEd** to already be installed and running on your local server or reachable by your server.  
 
@@ -29,14 +26,12 @@ cd src
 make -f makefile.unix
 
 ## Usage:
-Create the composer autoload file with
-```composer dump-autoload```
 
-Example Usage (see example.php for additional coverage):
+Example use, see examples.php for more
 
 ```
-// Composer Autoloader ( PSR-4 )
-require_once 'vendor/autoload.php';
+require_once 'jsonRPCClient.php';
+require_once 'verge.php';
 
 // Demo RPC configuration
 $config = array(
@@ -46,21 +41,24 @@ $config = array(
     'port' => '20102' );
 
 // Initiate connection
-$verge = new Verge\RPC(
-    sprintf('http://%s:%s@%s:%s/',
-        $config['user'],
-        $config['pass'],
-        $config['host'],
-        $config['port']
-    )
-);
+$rpc_connection = new jsonRPCClient($config);
 
-// Set name of the account.
-$account['name'] = 'Positivism';
+// Send RPC handle to verge
+$verge = new verge($rpc_connection);
 
-// Generate a new verge address.
-$verge->getnewaddress($account['name']);
+// create a new address
+$address = $verge->get_address('vergeDEV');
+print($address);
+
+// check balance 
+print("vergeDEV: " . $verge->get_balance('vergeDEV'));
+
+// send money externally (withdraw?)
+$verge->send('vergeDEV', 'DPNC2H2pYUCSebQ992GyeRTRuWw3hCTBwD', 10000);
 
 ```
 
-**PHP-Verge created with <33 by:** [@Positivism](https://github.com/Positivism)
+
+
+
+Forked from library created by Marcus Kazmierczak, http://mkaz.com/
