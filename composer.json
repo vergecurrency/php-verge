@@ -1,7 +1,40 @@
 {
+  "name": "vergecurrency/verge-client",
+  "type": "library",
+  "description": "Verge Currency PHP client library",
+  "keywords": [
+    "verge",
+    "currency",
+    "cryptocurrency",
+    "xvg",
+    "rpc"
+  ],
+  "homepage": "https://vergecurrency.com/",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Swen van Zanten",
+      "email": "swen@vergecoreteam.com",
+      "homepage": "https://github.com/SwenVanZanten"
+    }
+  ],
+    "require": {
+        "php": ">=7.2",
+        "ext-json": "*",
+        "guzzlehttp/guzzle": "^6.5",
+        "karriere/json-decoder": "^2.2"
+    },
+    "config": {
+        "sort-packages": true
+    },
     "autoload": {
         "psr-4": {
-            "Verge\\": "Verge"
+            "Verge\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "GuzzleHttp\\Tests\\": "tests/"
         }
     }
 }
