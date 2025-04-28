@@ -1,5 +1,5 @@
 {
-    "name": "yourname/verge-rpc",
+    "name": "vergecurrency/verge-rpc",
     "description": "A JSON-RPC client for Verge Currency in PHP.",
     "type": "library",
     "license": "MIT",
