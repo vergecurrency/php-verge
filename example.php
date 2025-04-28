@@ -8,7 +8,7 @@ use Verge\RPC;
 /**
  * Example usage of the Verge RPC client.
  *
- * @author 
+ * @vergecurrency
  */
 
 // RPC connection configuration
