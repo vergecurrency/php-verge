@@ -8,8 +8,9 @@ ____   _________________________   ________ ___________
 ```
 # PHP-Verge
 <a href="https://github.com/vergecurrency/php-verge/actions/workflows/php.yml">
-  <img src="https://github.com/vergecurrency/php-verge/actions/workflows/php.yml/badge.svg">
-  </a>
+<img src="https://github.com/vergecurrency/php-verge/actions/workflows/php.yml/badge.svg">
+</a>
+<br>
 A basic PHP library to talk to a VERGEd daemon to get you started in your VERGE project!
 Proper rpc usage with basic examples given to assist you in your development.
 For a full list of available rpc commands issue the _help_ command in your VERGEd.
