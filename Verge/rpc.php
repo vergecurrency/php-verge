@@ -1,167 +1,168 @@
-<?php 
-/*
-                    COPYRIGHT
-
-Copyright 2007 Sergio Vaccaro <sergio@inservibile.org>
-
-This file is part of JSON-RPC PHP.
-
-JSON-RPC PHP is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
-
-JSON-RPC PHP is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with JSON-RPC PHP; if not, write to the Free Software
-Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-*/
-
-/**
- * The object of this class are generic jsonRPC 1.0 clients
- * http://json-rpc.org/wiki/specification
- *
- * @author sergio <jsonrpcphp@inservibile.org>
- */
+<?php
+declare(strict_types=1);
 
 namespace Verge;
 
-class RPC {
+use Exception;
+use RuntimeException;
+use InvalidArgumentException;
 
-    /**
-     * Debug state
-     *
-     * @var boolean
-     */
-    private $debug;
-
+/**
+ * A JSON-RPC 2.0 Client
+ *
+ * @author 
+ */
+class RPC
+{
     /**
      * The server URL
      *
      * @var string
      */
-    private $url;
-    /**
-     * The request id
-     *
-     * @var integer
-     */
-    private $id;
-    /**
-     * If true, notifications are performed instead of requests
-     *
-     * @var boolean
-     */
-    private $notification = false;
+    private string $url;
 
     /**
-     * Takes the connection parameters
+     * If true, requests are sent as notifications (no response expected)
+     *
+     * @var bool
+     */
+    private bool $notification = false;
+
+    /**
+     * Message ID counter
+     *
+     * @var int
+     */
+    private int $id = 1;
+
+    /**
+     * Enable or disable debug output
+     *
+     * @var bool
+     */
+    private bool $debug;
+
+    /**
+     * RPC constructor.
      *
      * @param string $url
-     * @param boolean $debug
+     * @param bool $debug
      */
-    public function __construct($url,$debug = false) {
-        // server URL
+    public function __construct(string $url, bool $debug = false)
+    {
         $this->url = $url;
-        // proxy
-        empty($proxy) ? $this->proxy = '' : $this->proxy = $proxy;
-        // debug state
-        empty($debug) ? $this->debug = false : $this->debug = true;
-        // message id
-        $this->id = 1;
+        $this->debug = $debug;
     }
 
     /**
-     * Sets the notification state of the object. In this state, notifications are performed, instead of requests.
+     * Enable or disable notification mode.
      *
-     * @param boolean $notification
+     * @param bool $notification
+     * @return void
      */
-    public function setRPCNotification($notification) {
-        empty($notification) ?
-                            $this->notification = false
-                            :
-                            $this->notification = true;
+    public function setRPCNotification(bool $notification): void
+    {
+        $this->notification = $notification;
     }
 
     /**
-     * Performs a jsonRCP request and gets the results as an array
+     * Makes a JSON-RPC request
      *
      * @param string $method
      * @param array $params
-     * @return array
+     * @return mixed
+     * @throws Exception
      */
-    public function __call($method,$params) {
-
-        // check
+    public function __call(string $method, array $params): mixed
+    {
         if (!is_scalar($method)) {
-            throw new Exception('Method name has no scalar value');
+            throw new InvalidArgumentException('Method name must be a scalar.');
         }
 
-        // check
-        if (is_array($params)) {
-            // no keys
-            $params = array_values($params);
-        } else {
-            throw new Exception('Params must be given as array');
-        }
+        $currentId = $this->notification ? null : $this->id++;
 
-        // sets notification or request task
-        if ($this->notification) {
-            $currentId = NULL;
-        } else {
-            $currentId = $this->id;
-        }
+        $payload = [
+            'jsonrpc' => '2.0',
+            'method'  => $method,
+            'params'  => array_values($params),
+            'id'      => $currentId,
+        ];
 
-        // prepares the request
-        $request = array(
-                        'method' => $method,
-                        'params' => $params,
-                        'id' => $currentId
-                        );
-        $request = json_encode($request);
-        $this->debug && $this->debug.='***** Request *****'."\n".$request."\n".'***** End Of request *****'."\n\n";
+        $requestData = json_encode($payload);
 
-        // performs the HTTP POST
-        $opts = array ('http' => array (
-                            'method'  => 'POST',
-                            'header'  => 'Content-type: application/json',
-                            'content' => $request
-                            ));
-        $context  = stream_context_create($opts);
-        if ($fp = fopen($this->url, 'r', false, $context)) {
-            $response = '';
-            while($row = fgets($fp)) {
-                $response.= trim($row)."\n";
-            }
-            $this->debug && $this->debug.='***** Server response *****'."\n".$response.'***** End of server response *****'."\n";
-            $response = json_decode($response,true);
-        } else {
-            throw new Exception('Unable to connect to '.$this->url);
-        }
-
-        // debug output
         if ($this->debug) {
-            echo nl2br($debug);
+            echo "***** Request *****\n" . $requestData . "\n***** End Of Request *****\n\n";
         }
 
-        // final checks and return
-        if (!$this->notification) {
-            // check
-            if ($response['id'] != $currentId) {
-                throw new Exception('Incorrect response id (request id: '.$currentId.', response id: '.$response['id'].')');
-            }
-            if (!is_null($response['error'])) {
-                throw new Exception('Request error: '.$response['error']);
-            }
+        $response = $this->sendRequest($requestData);
 
-            return $response['result'];
-
-        } else {
+        if ($this->notification) {
+            // No response expected
             return true;
         }
+
+        if (!isset($response['id']) || $response['id'] !== $currentId) {
+            throw new RuntimeException('Incorrect response ID (request ID: ' . $currentId . ', response ID: ' . ($response['id'] ?? 'null') . ')');
+        }
+
+        if (isset($response['error']) && $response['error'] !== null) {
+            $errorMessage = is_array($response['error']) ? json_encode($response['error']) : $response['error'];
+            throw new RuntimeException('RPC Error: ' . $errorMessage);
+        }
+
+        return $response['result'] ?? null;
+    }
+
+    /**
+     * Internal method to send a request using cURL.
+     *
+     * @param string $data
+     * @return array
+     * @throws Exception
+     */
+    private function sendRequest(string $data): array
+    {
+        $ch = curl_init($this->url);
+
+        if ($ch === false) {
+            throw new RuntimeException('Failed to initialize cURL');
+        }
+
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST            => true,
+            CURLOPT_HTTPHEADER      => [
+                'Content-Type: application/json',
+            ],
+            CURLOPT_POSTFIELDS      => $data,
+            CURLOPT_TIMEOUT         => 10,
+        ]);
+
+        $rawResponse = curl_exec($ch);
+
+        if ($rawResponse === false) {
+            $error = curl_error($ch);
+            curl_close($ch);
+            throw new RuntimeException('cURL error: ' . $error);
+        }
+
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if ($this->debug) {
+            echo "***** Server Response *****\n" . $rawResponse . "\n***** End Of Server Response *****\n\n";
+        }
+
+        if ($httpCode < 200 || $httpCode >= 300) {
+            throw new RuntimeException('Unexpected HTTP status code: ' . $httpCode);
+        }
+
+        $response = json_decode($rawResponse, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new RuntimeException('Invalid JSON response: ' . json_last_error_msg());
+        }
+
+        return $response;
     }
 }

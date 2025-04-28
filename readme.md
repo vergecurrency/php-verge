@@ -2,7 +2,7 @@
 ____   _________________________   ________ ___________
 \   \ /   /\_   _____/\______   \ /  _____/ \_   _____/
  \   Y   /  |    __)_  |       _//   \  ___  |    __)_ 
-  \     /   |        \ |    |   \\    \_\  \ |        \ 2018 VERGE
+  \     /   |        \ |    |   \\    \_\  \ |        \ 2025 VERGE
    \___/   /_______  / |____|_  / \______  //_______  /
                    \/         \/         \/         \/ 
 ```
@@ -21,12 +21,7 @@ Requires **Composer** [https://getcomposer.org/](https://getcomposer.org/)
 Requires **VERGEd** to already be installed and running on your local server or reachable by your server.  
 
 Get the VERGEd source from: https://github.com/vergecurrency/verge
-
-compiling the coin is as easy as going into the ~/verge/src directory and typing (after you have dependencies installed):
-git clone https://github.com/vergecurrency/verge
-cd verge
-cd src
-make -f makefile.unix
+and follow the instructions for compiling the verged (daemon) or download the appropriate bundle for your platform in the releases tab
 
 ## Usage:
 Create the composer autoload file with
