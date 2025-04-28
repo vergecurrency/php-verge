@@ -1,46 +1,66 @@
 <?php
+declare(strict_types=1);
 
-/**
- * Example usage of an RPC with Verge.
- * PSR #0-4 Compliant.
- * @author Positivism
- */
-
-// Composer Autoloader ( PSR-4 )
 require_once 'vendor/autoload.php';
 
-// Demo RPC configuration
-$config = array(
+use Verge\RPC;
+
+/**
+ * Example usage of the Verge RPC client.
+ *
+ * @author 
+ */
+
+// RPC connection configuration
+$config = [
     'user' => 'vergerpcuser',
     'pass' => 'rpcpassword',
     'host' => '127.0.0.1',
-    'port' => '20102' );
+    'port' => '20102',
+];
 
-// Initiate connection
-$verge = new Verge\RPC(
-    sprintf('http://%s:%s@%s:%s/',
-        $config['user'],
-        $config['pass'],
-        $config['host'],
-        $config['port']
-    )
+// Build the RPC URL with Basic Authentication
+$rpcUrl = sprintf(
+    'http://%s:%s@%s:%d/',
+    urlencode($config['user']),
+    urlencode($config['pass']),
+    $config['host'],
+    (int)$config['port']
 );
 
-// Set name of the account.
-$account['name'] = 'Positivism';
+// Initialize RPC connection
+$verge = new RPC($rpcUrl, debug: true);
 
-// Generate a new verge address.
-$verge->getnewaddress($account['name']);
+try {
+    // Set up account information
+    $accountName = 'Positivism';
 
-// Get account addresses
-$account['addresses'] = $verge->getaddressesbyaccount($account['name']);
+    // Generate a new address for the account
+    $newAddress = $verge->getnewaddress($accountName);
 
-// Get account balance.
-$account['balance'] = $verge->getbalance($account['name']);
+    // Fetch all addresses associated with the account
+    $addresses = $verge->getaddressesbyaccount($accountName);
 
-echo 'Verge Account Name: '.$account['name'].'<br />';
-echo 'Verge Account Balance: '.$account['balance'].'<br />';
-echo 'Verge Account Addresses: <br /><br />';
-foreach ($account['addresses'] as $key => $address) {
-    echo 'Address #'.$key.': '.$address.'<br />';
+    // Get the account's current balance
+    $balance = $verge->getbalance($accountName);
+
+    // Display account information
+    echo '<h2>Verge Account Information</h2>';
+    echo '<strong>Account Name:</strong> ' . htmlspecialchars($accountName) . '<br>';
+    echo '<strong>Account Balance:</strong> ' . htmlspecialchars((string)$balance) . ' XVG<br>';
+    echo '<strong>New Address:</strong> ' . htmlspecialchars($newAddress) . '<br>';
+
+    echo '<h3>Associated Addresses:</h3>';
+    if (!empty($addresses)) {
+        echo '<ul>';
+        foreach ($addresses as $index => $address) {
+            echo '<li>Address #' . htmlspecialchars((string)$index) . ': ' . htmlspecialchars($address) . '</li>';
+        }
+        echo '</ul>';
+    } else {
+        echo '<p>No addresses found for this account.</p>';
+    }
+
+} catch (Exception $e) {
+    echo '<p style="color: red;">RPC Error: ' . htmlspecialchars($e->getMessage()) . '</p>';
 }
