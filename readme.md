@@ -8,7 +8,7 @@ ____   _________________________   ________ ___________
 ```
 # PHP-Verge
 <a href="https://github.com/vergecurrency/php-verge/actions/workflows/php.yml">
-<img src="https://github.com/vergecurrency/php-verge/actions/workflows/php.yml/badge.svg">
+<img alt="PHP workflow status" src="https://github.com/vergecurrency/php-verge/actions/workflows/php.yml/badge.svg?branch=master">
 </a>
 <br>
 A basic PHP library for talking to a `verged` daemon from your Verge project.
