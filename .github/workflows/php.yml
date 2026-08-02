@@ -102,7 +102,7 @@ jobs:
         cat "$RUNNER_TEMP/verged.log"
         exit 1
 
-    - name: Run example against Verge Core
+    - name: Run example against Verge Core 26.7 Regtest
       run: |
         output="$(php example.php)"
         echo "$output"
