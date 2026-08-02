@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-require_once 'vendor/autoload.php';
+require_once __DIR__ . '/vendor/autoload.php';
 
 use Verge\RPC;
 
@@ -13,54 +13,46 @@ use Verge\RPC;
 
 // RPC connection configuration
 $config = [
-    'user' => 'vergerpcuser',
-    'pass' => 'rpcpassword',
-    'host' => '127.0.0.1',
-    'port' => '20102',
+    'user' => getenv('VERGE_RPC_USER') ?: 'vergerpcuser',
+    'pass' => getenv('VERGE_RPC_PASSWORD') ?: 'rpcpassword',
+    'host' => getenv('VERGE_RPC_HOST') ?: '127.0.0.1',
+    'port' => (int) (getenv('VERGE_RPC_PORT') ?: 20102),
 ];
 
 // Build the RPC URL with Basic Authentication
 $rpcUrl = sprintf(
     'http://%s:%s@%s:%d/',
-    urlencode($config['user']),
-    urlencode($config['pass']),
+    rawurlencode($config['user']),
+    rawurlencode($config['pass']),
     $config['host'],
-    (int)$config['port']
+    $config['port']
 );
 
 // Initialize RPC connection
-$verge = new RPC($rpcUrl, debug: true);
+$debug = filter_var(getenv('VERGE_RPC_DEBUG') ?: 'false', FILTER_VALIDATE_BOOL);
+$verge = new RPC($rpcUrl, debug: $debug);
 
 try {
-    // Set up account information
-    $accountName = 'Positivism';
+    $label = 'Positivism';
 
-    // Generate a new address for the account
-    $newAddress = $verge->getnewaddress($accountName);
+    // Generate a new address and associate it with a wallet label.
+    $newAddress = $verge->getnewaddress($label);
 
-    // Fetch all addresses associated with the account
-    $addresses = $verge->getaddressesbyaccount($accountName);
+    // Fetch all addresses associated with the label.
+    $addresses = array_keys($verge->getaddressesbylabel($label));
 
-    // Get the account's current balance
-    $balance = $verge->getbalance($accountName);
+    // Fetch the wallet's total available balance.
+    $balance = $verge->getbalance();
 
-    // Display account information
-    echo '<h2>Verge Account Information</h2>';
-    echo '<strong>Account Name:</strong> ' . htmlspecialchars($accountName) . '<br>';
-    echo '<strong>Account Balance:</strong> ' . htmlspecialchars((string)$balance) . ' XVG<br>';
-    echo '<strong>New Address:</strong> ' . htmlspecialchars($newAddress) . '<br>';
-
-    echo '<h3>Associated Addresses:</h3>';
-    if (!empty($addresses)) {
-        echo '<ul>';
-        foreach ($addresses as $index => $address) {
-            echo '<li>Address #' . htmlspecialchars((string)$index) . ': ' . htmlspecialchars($address) . '</li>';
-        }
-        echo '</ul>';
-    } else {
-        echo '<p>No addresses found for this account.</p>';
+    echo "Verge Wallet Information\n";
+    echo "Label: {$label}\n";
+    echo "Balance: {$balance} XVG\n";
+    echo "New address: {$newAddress}\n";
+    echo "Associated addresses:\n";
+    foreach ($addresses as $index => $address) {
+        echo sprintf("  #%d: %s\n", $index + 1, $address);
     }
-
-} catch (Exception $e) {
-    echo '<p style="color: red;">RPC Error: ' . htmlspecialchars($e->getMessage()) . '</p>';
+} catch (Throwable $exception) {
+    fwrite(STDERR, 'RPC error: ' . $exception->getMessage() . PHP_EOL);
+    exit(1);
 }

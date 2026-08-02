@@ -1,39 +1,121 @@
-name: PHP Composer
+name: PHP
 
 on:
   push:
     branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
-  build:
-
+  quality:
+    name: PHP ${{ matrix.php }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ["8.1", "8.2", "8.3", "8.4", "8.5"]
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
 
-    - name: Validate composer.json and composer.lock
+    - name: Set up PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ matrix.php }}
+        extensions: curl, json
+        coverage: none
+
+    - name: Validate Composer metadata
       run: composer validate --strict
 
-    - name: Cache Composer packages
-      id: composer-cache
-      uses: actions/cache@v3
+    - name: Install dependencies
+      run: composer install --prefer-dist --no-interaction --no-progress
+
+    - name: Run checks
+      run: composer test
+
+  verge-core:
+    name: Verge Core 26.7 integration
+    runs-on: ubuntu-24.04
+    env:
+      VERGE_VERSION: "26.7"
+      VERGE_ASSET_SHA256: "f1476ac7e5a5d5ccfac1d2c79104c4cf4cf62de979e45448c33d180dfee34799"
+      VERGE_RPC_USER: vergerpcuser
+      VERGE_RPC_PASSWORD: rpcpassword
+      VERGE_RPC_HOST: 127.0.0.1
+      VERGE_RPC_PORT: "20102"
+
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: Set up PHP
+      uses: shivammathur/setup-php@v2
       with:
-        path: vendor
-        key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-php-
+        php-version: "8.5"
+        extensions: curl, json
+        coverage: none
 
     - name: Install dependencies
-      run: composer install --prefer-dist --no-progress
+      run: composer install --prefer-dist --no-interaction --no-progress
 
-    # Add a test script to composer.json, for instance: "test": "vendor/bin/phpunit"
-    # Docs: https://getcomposer.org/doc/articles/scripts.md
+    - name: Download Verge Core
+      run: |
+        asset="verge-ubuntu24-appimages.zip"
+        curl --fail --location --retry 3 \
+          --output "$RUNNER_TEMP/$asset" \
+          "https://github.com/vergecurrency/verge/releases/download/v${VERGE_VERSION}/$asset"
+        echo "${VERGE_ASSET_SHA256}  $RUNNER_TEMP/$asset" | sha256sum --check
+        unzip -q "$RUNNER_TEMP/$asset" -d "$RUNNER_TEMP/verge"
+        chmod +x "$RUNNER_TEMP/verge/"*.AppImage
 
-    # - name: Run test suite
-    #   run: composer run-script test
+    - name: Start verged
+      run: |
+        mkdir -p "$RUNNER_TEMP/verge-data"
+        APPIMAGE_EXTRACT_AND_RUN=1 "$RUNNER_TEMP/verge/verged-x86_64.AppImage" \
+          -regtest \
+          -server \
+          -listen=0 \
+          -dnsseed=0 \
+          -discover=0 \
+          -rpcuser="$VERGE_RPC_USER" \
+          -rpcpassword="$VERGE_RPC_PASSWORD" \
+          -rpcport="$VERGE_RPC_PORT" \
+          -datadir="$RUNNER_TEMP/verge-data" \
+          -printtoconsole > "$RUNNER_TEMP/verged.log" 2>&1 &
+        echo $! > "$RUNNER_TEMP/verged.pid"
+
+        for attempt in {1..60}; do
+          if curl --silent --fail \
+            --user "$VERGE_RPC_USER:$VERGE_RPC_PASSWORD" \
+            --data-binary '{"jsonrpc":"1.0","id":"ready","method":"getblockchaininfo","params":[]}' \
+            -H 'content-type: application/json' \
+            "http://$VERGE_RPC_HOST:$VERGE_RPC_PORT/" > /dev/null; then
+            exit 0
+          fi
+          sleep 1
+        done
+
+        cat "$RUNNER_TEMP/verged.log"
+        exit 1
+
+    - name: Run example against Verge Core
+      run: |
+        output="$(php example.php)"
+        echo "$output"
+        grep -q '^New address: ' <<< "$output"
+        grep -q '^Associated addresses:' <<< "$output"
+
+    - name: Show daemon log on failure
+      if: failure()
+      run: cat "$RUNNER_TEMP/verged.log"
+
+    - name: Stop verged
+      if: always()
+      run: |
+        if [[ -f "$RUNNER_TEMP/verged.pid" ]]; then
+          kill "$(cat "$RUNNER_TEMP/verged.pid")" 2>/dev/null || true
+        fi
